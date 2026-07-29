@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandit Wargame | dxtb23</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            background-color: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                rgba(0, 0, 0, 0.1) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 40px 60px;
+        }
+
+        .top-nav {
+            padding: 15px 40px 0;
+        }
+
+        .top-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 20px 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #00ff41;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #00cc33;
+            opacity: 0.9;
+        }
+
+        .prompt {
+            color: #00ff41;
+            font-weight: 500;
+            margin: 20px 0;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            background: rgba(0, 255, 65, 0.03);
+            border: 1px solid #003311;
+            border-radius: 4px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #00ff41;
+            position: relative;
+        }
+
+        .level-card::before {
+            content: '>';
+            position: absolute;
+            left: 8px;
+            color: #003311;
+            opacity: 0.5;
+        }
+
+        .level-card:hover {
+            background: rgba(0, 255, 65, 0.08);
+            border-color: #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
+        }
+
+        .level-number {
+            font-size: 1.8rem;
+            color: #00ff41;
+            font-weight: 500;
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+        }
+
+        .coming-soon {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .coming-soon .level-number {
+            color: #004411;
+        }
+
+        .level-card.active {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .level-card.active .level-number {
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .level-card.active::before {
+            color: #00ffff;
+            opacity: 0.8;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            color: #00cc33;
+        }
+
+        .stat-label {
+            color: #008822;
+            margin-right: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #004411;
+            font-size: 0.8rem;
+            border-top: 1px solid #002208;
+            margin-top: 60px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff41;
+            animation: blink 1s step-end infinite;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .glow {
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41; }
+            50% { text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px 20px 40px;
+            }
+
+            .terminal-header {
+                padding: 12px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .levels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 8px;
+            }
+
+            .level-number {
+                font-size: 1.4rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="index.html" style="color: #00ff41; font-family: 'JetBrains Mono', monospace; text-decoration: none; font-size: 0.9rem;">&larr; cd ..</a>
+    </nav>
+    <div class="container">
+        <header class="header">
+            <h1>BANDIT WARGAME</h1>
+            <p class="glow">OverTheWire security challenge solutions</p>
+            <div class="prompt"><span class="cursor"></span></div>
+        </header>
+
+        <main>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Total:</span> 34 levels
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completed:</span> 1
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Current:</span> <span style="color: #00ffff;">Level 0</span>
+                </div>
+            </div>
+
+            <div class="prompt">$ ls -l levels/</div>
+            
+            <div class="levels-grid">
+                <a href="bandit-level-0.html" class="level-card active"><div class="level-number">0</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">1</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">2</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">3</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">4</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">5</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">6</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">7</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">8</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">9</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">10</div></a>
+
+                <a href="#" class="level-card coming-soon"><div class="level-number">11</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">12</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">13</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">14</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">15</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">16</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">17</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">18</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">19</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">20</div></a>
+
+                <a href="#" class="level-card coming-soon"><div class="level-number">21</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">22</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">23</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">24</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">25</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">26</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">27</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">28</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">29</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">30</div></a>
+
+                <a href="#" class="level-card coming-soon"><div class="level-number">31</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">32</div></a>
+                <a href="#" class="level-card coming-soon"><div class="level-number">33</div></a>
+            </div>
+
+            <div class="prompt" style="margin-top: 20px;">$ _<span class="cursor"></span></div>
+        </main>
+
+        <footer class="footer">
+            <p>dxtb23@bandit: ~ | &copy; 2026 | Last login: <span style="color: #00ff41;">Now</span></p>
+        </footer>
+    </div>
+</body>
+</html>
